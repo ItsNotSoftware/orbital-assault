@@ -1,10 +1,7 @@
 mod entity;
 
 use entity::Entity;
-use ggez::event;
-use ggez::glam::Vec2;
-use ggez::graphics::{self, Color};
-use ggez::{Context, GameResult};
+use orbital_assault::*;
 
 struct MainState {
     entities: Vec<Entity>,
@@ -12,9 +9,12 @@ struct MainState {
 
 impl MainState {
     fn new() -> GameResult<MainState> {
+        let planet = entity::create_planet(400.0, 300.0, 50.0);
+
         let s = MainState {
-            entities: Vec::new(),
+            entities: vec![planet],
         };
+
         Ok(s)
     }
 }
@@ -28,15 +28,10 @@ impl event::EventHandler<ggez::GameError> for MainState {
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
 
-        let circle = graphics::Mesh::new_circle(
-            ctx,
-            graphics::DrawMode::fill(),
-            Vec2::new(0.0, 0.0),
-            100.0,
-            2.0,
-            Color::WHITE,
-        )?;
-        canvas.draw(&circle, Vec2::new(self.pos_x, 380.0));
+        // Draw all entities
+        self.entities.iter().for_each(|e| {
+            canvas.draw(&e.get_mesh(ctx), e.get_pos());
+        });
 
         canvas.finish(ctx)?;
         Ok(())
@@ -44,8 +39,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
 }
 
 pub fn main() -> GameResult {
-    let cb = ggez::ContextBuilder::new("super_simple", "ggez");
-    let (ctx, event_loop) = cb.build()?;
-    let state = MainState::new()?;
-    event::run(ctx, event_loop, state)
+    let cb = ContextBuilder::new("orbital-assault", "ItsNotSoftware")
+        .window_setup(conf::WindowSetup::default().title("Orbital Assault!"))
+        .window_mode(conf::WindowMode::default().dimensions(WINDOW_WIDTH, WINDOW_HEIGHT));
+
+    let (ctx, events_loop) = cb.build()?;
+    let game = MainState::new()?;
+
+    event::run(ctx, events_loop, game)
 }

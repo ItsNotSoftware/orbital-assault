@@ -1,6 +1,6 @@
 use orbital_assault::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum EntityType {
     Missile,
     Planet,
@@ -8,6 +8,7 @@ pub enum EntityType {
     Ufo,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct Entity {
     e_type: EntityType,
     pos: Vec2,
@@ -16,6 +17,23 @@ pub struct Entity {
     ang_vel: f32,
     radius: f32,
     mass: f32,
+}
+impl Entity {
+    pub fn get_pos(self) -> Vec2 {
+        self.pos
+    }
+
+    pub fn get_mesh(self, ctx: &mut Context) -> Mesh {
+        graphics::Mesh::new_circle(
+            ctx,
+            graphics::DrawMode::fill(),
+            Vec2::new(0.0, 0.0),
+            100.0,
+            2.0,
+            Color::WHITE,
+        )
+        .expect("Could not create mesh")
+    }
 }
 
 pub fn create_missile(x: f32, y: f32, angle: f32) -> Entity {
