@@ -8,8 +8,8 @@ struct MainState {
 }
 
 impl MainState {
-    fn new() -> GameResult<MainState> {
-        let planet = entity::create_planet(400.0, 300.0, 50.0);
+    fn new(ctx: &mut Context) -> GameResult<MainState> {
+        let planet = entity::create_planet(ctx, 400.0, 300.0, 50.0);
 
         let s = MainState {
             entities: vec![planet],
@@ -30,7 +30,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         // Draw all entities
         self.entities.iter().for_each(|e| {
-            canvas.draw(&e.get_mesh(ctx), e.get_pos());
+            e.draw(&mut canvas);
         });
 
         canvas.finish(ctx)?;
@@ -43,8 +43,8 @@ pub fn main() -> GameResult {
         .window_setup(conf::WindowSetup::default().title("Orbital Assault!"))
         .window_mode(conf::WindowMode::default().dimensions(WINDOW_WIDTH, WINDOW_HEIGHT));
 
-    let (ctx, events_loop) = cb.build()?;
-    let game = MainState::new()?;
+    let (mut ctx, events_loop) = cb.build()?;
+    let game = MainState::new(&mut ctx)?;
 
     event::run(ctx, events_loop, game)
 }
