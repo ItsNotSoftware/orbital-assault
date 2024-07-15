@@ -1,33 +1,34 @@
-use crate::Entity;
+use crate::entity::*;
+use crate::Context;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
 
-static mut CURRENT_LEVEL: u8 = 0;
+static mut CURRENT_LEVEL: u8 = 1;
 
 #[derive(Debug, Deserialize)]
 struct Missile {
-    position: [i32; 2],
-    angle: i32,
+    position: [f32; 2],
+    angle: f32,
 }
 
 #[derive(Debug, Deserialize)]
 struct UFO {
-    position: [i32; 2],
-    speed: [i32; 2],
+    position: [f32; 2],
+    speed: [f32; 2],
 }
 
 #[derive(Debug, Deserialize)]
 struct Planet {
-    position: [i32; 2],
-    radius: i32,
+    position: [f32; 2],
+    radius: f32,
 }
 
 #[derive(Debug, Deserialize)]
 struct Asteroid {
-    position: [i32; 2],
-    speed: [i32; 2],
-    radius: i32,
+    position: [f32; 2],
+    speed: [f32; 2],
+    radius: f32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -38,22 +39,53 @@ struct SpaceData {
     asteroids: Vec<Asteroid>,
 }
 
-pub fn load_level_entities(file: &str) -> Vec<Entity> {
+pub fn load_level_entities(ctx: &mut Context) -> Vec<Entity> {
     let mut entities = Vec::new();
     let mut contents = String::new();
 
     // Update the current level
-    unsafe {
-        CURRENT_LEVEL += 1;
-    }
+    let level_file = format!("levels/{:02}.yaml", unsafe { CURRENT_LEVEL });
 
     // Update the contents with file data
-    let _ = File::open("levels/01.yaml")
-        .expect("Unable to open level")
+    let _ = File::open(&level_file)
+        .expect(&format!("Unable to open level: {}", level_file))
         .read_to_string(&mut contents);
+    let level_data: SpaceData = serde_yaml::from_str(&contents).unwrap();
 
-    let space_data: SpaceData = serde_yaml::from_str(&contents).unwrap();
+    // Missile
+    entities.push(create_missile(
+        ctx,
+        level_data.missile.position[0],
+        level_data.missile.position[1],
+        level_data.missile.angle,
+    ));
 
-    println!("{:#?}", space_data);
-    return entities;
+    // UFO
+    entities.push(create_ufo(
+        ctx,
+        level_data.ufo.position[0],
+        level_data.ufo.position[1],
+        level_data.ufo.speed[0],
+        level_data.ufo.speed[1],
+    ));
+
+    // Asteroids
+    level_data.asteroids.iter().for_each(|a| {
+        entities.push(create_asteroid(
+            ctx,
+            a.position[0],
+            a.position[1],
+            a.speed[0],
+            a.speed[1],
+            a.radius,
+        ))
+    });
+
+    // Planets
+    level_data
+        .planets
+        .iter()
+        .for_each(|p| entities.push(create_planet(ctx, p.position[0], p.position[1], p.radius)));
+
+    entities
 }

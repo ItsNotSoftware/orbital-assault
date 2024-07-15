@@ -2,7 +2,12 @@ mod entity;
 mod load_level;
 
 use entity::Entity;
-use orbital_assault::*;
+use ggez::event;
+use ggez::graphics;
+use ggez::input::keyboard::{KeyCode, KeyInput};
+use ggez::{conf, Context, ContextBuilder, GameResult};
+use load_level::load_level_entities;
+use orbital_assault::{WINDOW_HEIGHT, WINDOW_WIDTH};
 
 struct MainState {
     entities: Vec<Entity>,
@@ -10,13 +15,15 @@ struct MainState {
 
 impl MainState {
     fn new(ctx: &mut Context) -> GameResult<MainState> {
-        let planet = entity::create_planet(ctx, 400.0, 300.0, 50.0);
+        let entities = load_level_entities(ctx);
 
-        let s = MainState {
-            entities: vec![planet],
-        };
+        let s = MainState { entities };
 
         Ok(s)
+    }
+
+    fn reload_level(&mut self, ctx: &mut Context) {
+        self.entities = load_level_entities(ctx);
     }
 }
 
@@ -25,7 +32,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         const FPS: u32 = 60;
 
         while ctx.time.check_update_time(FPS) {
-            let dt = ctx.time.delta();
+            let _dt = ctx.time.delta();
         }
 
         Ok(())
@@ -41,6 +48,25 @@ impl event::EventHandler<ggez::GameError> for MainState {
         });
 
         canvas.finish(ctx)?;
+        Ok(())
+    }
+
+    fn key_down_event(
+        &mut self,
+        ctx: &mut Context,
+        input: KeyInput,
+        _repeated: bool,
+    ) -> GameResult {
+        match input.keycode {
+            Some(KeyCode::R) => {
+                self.reload_level(ctx);
+            }
+
+            Some(KeyCode::Escape) => ctx.request_quit(),
+
+            _ => (),
+        }
+
         Ok(())
     }
 }

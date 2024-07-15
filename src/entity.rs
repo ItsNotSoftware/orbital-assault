@@ -60,7 +60,7 @@ pub fn create_planet(ctx: &mut Context, x: f32, y: f32, radius: f32) -> Entity {
         Vec2::new(0.0, 0.0),
         radius,
         2.0,
-        Color::RED,
+        Color::MAGENTA,
     )
     .expect("Could not create mesh");
 
@@ -106,7 +106,9 @@ pub fn create_asteroid(
     }
 }
 
-pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32, angle: f32) -> Entity {
+pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32) -> Entity {
+    let angle = (vy / vx).atan();
+
     let mesh = graphics::Mesh::new_circle(
         ctx,
         graphics::DrawMode::fill(),
@@ -123,7 +125,7 @@ pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32, angle: f3
         vel: Vec2::new(vx, vy),
         angle,
         ang_vel: 0.0,
-        radius: 20.0,
+        radius: UFO_RADIUS,
         mass: 100.0,
         mesh,
     }

@@ -5,11 +5,11 @@ pub use ggez::graphics::{self, Color, Mesh};
 pub use ggez::{Context, ContextBuilder, GameResult};
 
 // Missile
-pub const MISSILE_RADIUS: f32 = 10.0;
+pub const MISSILE_RADIUS: f32 = 25.0;
 pub const MISSILE_MASS: f32 = 10.0;
 
 // UFO
-pub const UFO_RADIUS: f32 = 10.0;
+pub const UFO_RADIUS: f32 = 25.0;
 pub const UFO_MASS: f32 = 10.0;
 
 // Asteroids and Planets
