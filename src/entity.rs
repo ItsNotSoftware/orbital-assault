@@ -16,7 +16,6 @@ pub struct Entity {
     vel: Vec2,  // Bodyframe velocity
     angle: f32, // Angle in respect to the x-axis
     ang_vel: f32,
-    radius: f32,
     mass: f32,
     mesh: Mesh,
 }
@@ -31,12 +30,10 @@ impl Entity {
 }
 
 pub fn create_missile(ctx: &mut Context, x: f32, y: f32, angle: f32) -> Entity {
-    let mesh = graphics::Mesh::new_circle(
+    let mesh = graphics::Mesh::new_rectangle(
         ctx,
         graphics::DrawMode::fill(),
-        Vec2::new(0.0, 0.0),
-        MISSILE_RADIUS,
-        2.0,
+        graphics::Rect::new(0.0, 0.0, MISSILE_WIDTH, MISSILE_HEIGHT),
         Color::RED,
     )
     .expect("Could not create mesh");
@@ -47,7 +44,6 @@ pub fn create_missile(ctx: &mut Context, x: f32, y: f32, angle: f32) -> Entity {
         vel: Vec2::new(0.0, 0.0),
         angle,
         ang_vel: 0.0,
-        radius: MISSILE_RADIUS,
         mass: MISSILE_MASS,
         mesh,
     }
@@ -70,7 +66,6 @@ pub fn create_planet(ctx: &mut Context, x: f32, y: f32, radius: f32) -> Entity {
         vel: Vec2::new(0.0, 0.0),
         angle: 0.0,
         ang_vel: 0.0,
-        radius,
         mass: PLANET_DENSITY * radius * radius * std::f32::consts::PI,
         mesh,
     }
@@ -100,7 +95,6 @@ pub fn create_asteroid(
         vel: Vec2::new(vx, vy),
         angle: 0.0,
         ang_vel: 0.0,
-        radius: radious,
         mass: ASTEROID_DENSITY * radious * radious * std::f32::consts::PI,
         mesh,
     }
@@ -113,7 +107,7 @@ pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32) -> Entity
         ctx,
         graphics::DrawMode::fill(),
         Vec2::new(0.0, 0.0),
-        20.0,
+        UFO_RADIUS,
         2.0,
         Color::GREEN,
     )
@@ -125,7 +119,6 @@ pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32) -> Entity
         vel: Vec2::new(vx, vy),
         angle,
         ang_vel: 0.0,
-        radius: UFO_RADIUS,
         mass: 100.0,
         mesh,
     }
