@@ -1,4 +1,5 @@
 mod entity;
+mod load_level;
 
 use entity::Entity;
 use orbital_assault::*;
@@ -20,7 +21,13 @@ impl MainState {
 }
 
 impl event::EventHandler<ggez::GameError> for MainState {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult {
+    fn update(&mut self, ctx: &mut Context) -> GameResult {
+        const FPS: u32 = 60;
+
+        while ctx.time.check_update_time(FPS) {
+            let dt = ctx.time.delta();
+        }
+
         Ok(())
     }
 

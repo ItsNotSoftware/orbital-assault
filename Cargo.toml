@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 ggez = "0.9.3"
+serde = "1.0.204"
+serde_yaml = "0.9.34"

@@ -80,8 +80,8 @@ pub fn create_asteroid(
     ctx: &mut Context,
     x: f32,
     y: f32,
-    vt: f32,
-    vn: f32,
+    vx: f32,
+    vy: f32,
     radious: f32,
 ) -> Entity {
     let mesh = graphics::Mesh::new_circle(
@@ -97,7 +97,7 @@ pub fn create_asteroid(
     Entity {
         e_type: EntityType::Asteroid,
         pos: Vec2::new(x, y),
-        vel: Vec2::new(vt, vn),
+        vel: Vec2::new(vx, vy),
         angle: 0.0,
         ang_vel: 0.0,
         radius: radious,
@@ -106,7 +106,7 @@ pub fn create_asteroid(
     }
 }
 
-pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vt: f32, vn: f32, angle: f32) -> Entity {
+pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32, angle: f32) -> Entity {
     let mesh = graphics::Mesh::new_circle(
         ctx,
         graphics::DrawMode::fill(),
@@ -120,7 +120,7 @@ pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vt: f32, vn: f32, angle: f3
     Entity {
         e_type: EntityType::Ufo,
         pos: Vec2::new(x, y),
-        vel: Vec2::new(vt, vn),
+        vel: Vec2::new(vx, vy),
         angle,
         ang_vel: 0.0,
         radius: 20.0,
