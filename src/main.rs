@@ -3,11 +3,12 @@ mod load_level;
 
 use entity::Entity;
 use ggez::event;
+use ggez::glam::Vec2;
 use ggez::graphics;
 use ggez::input::keyboard::{KeyCode, KeyInput};
 use ggez::{conf, Context, ContextBuilder, GameResult};
 use load_level::load_level_entities;
-use orbital_assault::{WINDOW_HEIGHT, WINDOW_WIDTH};
+use orbital_assault::*;
 
 struct MainState {
     entities: Vec<Entity>,
@@ -29,10 +30,10 @@ impl MainState {
 
 impl event::EventHandler<ggez::GameError> for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        const FPS: u32 = 60;
+        let missile = &mut self.entities[0];
 
         while ctx.time.check_update_time(FPS) {
-            let _dt = ctx.time.delta();
+            missile.update_pos(DT);
         }
 
         Ok(())
@@ -57,9 +58,20 @@ impl event::EventHandler<ggez::GameError> for MainState {
         input: KeyInput,
         _repeated: bool,
     ) -> GameResult {
+        const MISSILE: usize = 1;
+
         match input.keycode {
             Some(KeyCode::R) => {
                 self.reload_level(ctx);
+            }
+
+            Some(KeyCode::Space) => {
+                // Apply force to missile
+                let missile = &mut self.entities[0];
+                let (_, angle) = missile.get_pose();
+
+                let force = Vec2::new(MISSILE_THRUST * angle.cos(), MISSILE_THRUST * angle.sin());
+                missile.apply_force(force, ctx.time.delta().as_secs_f32());
             }
 
             Some(KeyCode::Escape) => ctx.request_quit(),

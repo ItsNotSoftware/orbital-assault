@@ -20,12 +20,27 @@ pub struct Entity {
     mesh: Mesh,
 }
 impl Entity {
-    pub fn get_pos(&self) -> Vec2 {
-        self.pos
+    pub fn get_pose(&self) -> (Vec2, f32) {
+        (self.pos, self.angle)
+    }
+
+    pub fn get_mass(&self) -> f32 {
+        self.mass
     }
 
     pub fn draw(&self, canvas: &mut Canvas) {
-        canvas.draw(&self.mesh.clone(), self.pos.clone());
+        canvas.draw(&self.mesh, self.pos);
+    }
+
+    pub fn update_pos(&mut self, dt: f32) {
+        dbg!(self.vel);
+        self.pos.x += self.vel.x * dt;
+        self.pos.y += self.vel.y * dt;
+    }
+
+    pub fn apply_force(&mut self, force: Vec2, dt: f32) {
+        self.vel.x += force.x / self.mass * dt;
+        self.vel.y += force.y / self.mass * dt;
     }
 }
 
