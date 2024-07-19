@@ -1,5 +1,6 @@
 use crate::entity::*;
 use crate::Context;
+use orbital_assault::INITIAL_SPEED;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
@@ -39,7 +40,7 @@ struct SpaceData {
     asteroids: Vec<Asteroid>,
 }
 
-pub fn load_level_entities(ctx: &mut Context) -> Vec<Entity> {
+pub fn load_level_entities() -> Vec<Entity> {
     let mut entities = Vec::new();
     let mut contents = String::new();
 
@@ -54,15 +55,14 @@ pub fn load_level_entities(ctx: &mut Context) -> Vec<Entity> {
 
     // Missile
     entities.push(create_missile(
-        ctx,
         level_data.missile.position[0],
         level_data.missile.position[1],
+        INITIAL_SPEED,
         level_data.missile.angle,
     ));
 
     // UFO
     entities.push(create_ufo(
-        ctx,
         level_data.ufo.position[0],
         level_data.ufo.position[1],
         level_data.ufo.speed[0],
@@ -72,7 +72,6 @@ pub fn load_level_entities(ctx: &mut Context) -> Vec<Entity> {
     // Asteroids
     level_data.asteroids.iter().for_each(|a| {
         entities.push(create_asteroid(
-            ctx,
             a.position[0],
             a.position[1],
             a.speed[0],
@@ -85,7 +84,7 @@ pub fn load_level_entities(ctx: &mut Context) -> Vec<Entity> {
     level_data
         .planets
         .iter()
-        .for_each(|p| entities.push(create_planet(ctx, p.position[0], p.position[1], p.radius)));
+        .for_each(|p| entities.push(create_planet(p.position[0], p.position[1], p.radius)));
 
     entities
 }

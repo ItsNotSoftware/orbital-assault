@@ -5,7 +5,7 @@ mod load_level;
 use entity::Entity;
 use ggez::event;
 use ggez::glam::Vec2;
-use ggez::graphics;
+use ggez::graphics::DrawParam;
 use ggez::input::keyboard::{KeyCode, KeyInput};
 use ggez::{conf, Context, ContextBuilder, GameResult};
 use load_level::load_level_entities;
@@ -17,8 +17,8 @@ struct MainState {
 }
 
 impl MainState {
-    fn new(ctx: &mut Context) -> GameResult<MainState> {
-        let entities = load_level_entities(ctx);
+    fn new(_ctx: &mut Context) -> GameResult<MainState> {
+        let entities = load_level_entities();
 
         let s = MainState {
             running: false,
@@ -28,8 +28,8 @@ impl MainState {
         Ok(s)
     }
 
-    fn reload_level(&mut self, ctx: &mut Context) {
-        self.entities = load_level_entities(ctx);
+    fn reload_level(&mut self) {
+        self.entities = load_level_entities();
     }
 }
 
@@ -54,7 +54,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         // Draw all entities
         self.entities.iter().for_each(|e| {
-            e.draw(&mut canvas);
+            // Set position and rotation
+            let (pos, theta) = e.get_pose();
+            let draw_params = DrawParam::default().dest(pos).rotation(theta);
+
+            let mesh = e.get_mesh(ctx);
+            canvas.draw(&mesh, draw_params);
         });
 
         canvas.finish(ctx)?;
@@ -70,7 +75,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         match input.keycode {
             Some(KeyCode::R) => {
                 self.running = false;
-                self.reload_level(ctx);
+                self.reload_level();
             }
 
             Some(KeyCode::Space) => {

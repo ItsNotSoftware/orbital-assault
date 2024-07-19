@@ -15,9 +15,8 @@ pub struct Entity {
     pos: Vec2,
     vel: Vec2,  // Bodyframe velocity
     theta: f32, // Angle in respect to the x-axis
-    v_theta: f32,
     mass: f32,
-    mesh: Mesh,
+    radius: f32,
 }
 impl Entity {
     pub fn get_pose(&self) -> (Vec2, f32) {
@@ -28,11 +27,51 @@ impl Entity {
         self.mass
     }
 
-    pub fn draw(&self, canvas: &mut Canvas) {
-        canvas.draw(&self.mesh, self.pos);
+    pub fn get_mesh(&self, ctx: &mut Context) -> Mesh {
+        match self.e_type {
+            EntityType::Missile => graphics::Mesh::new_rectangle(
+                ctx,
+                graphics::DrawMode::fill(),
+                graphics::Rect::new(0.0, 0.0, MISSILE_WIDTH, MISSILE_HEIGHT),
+                Color::RED,
+            )
+            .expect("Could not create mesh"),
+
+            EntityType::Planet => graphics::Mesh::new_circle(
+                ctx,
+                graphics::DrawMode::fill(),
+                Vec2::new(0.0, 0.0),
+                self.radius,
+                2.0,
+                Color::MAGENTA,
+            )
+            .expect("Could not create mesh"),
+
+            EntityType::Asteroid => graphics::Mesh::new_circle(
+                ctx,
+                graphics::DrawMode::fill(),
+                Vec2::new(0.0, 0.0),
+                self.radius,
+                2.0,
+                Color::BLACK,
+            )
+            .expect("Could not create mesh"),
+
+            EntityType::Ufo => graphics::Mesh::new_circle(
+                ctx,
+                graphics::DrawMode::fill(),
+                Vec2::new(0.0, 0.0),
+                UFO_RADIUS,
+                2.0,
+                Color::GREEN,
+            )
+            .expect("Could not create mesh"),
+        }
     }
 
     pub fn update_pos(&mut self, dt: f32) {
+        self.theta = self.vel.y.atan2(self.vel.x);
+
         self.pos.x += self.vel.x * dt;
         self.pos.y += self.vel.y * dt;
     }
@@ -43,8 +82,6 @@ impl Entity {
     }
 
     pub fn apply_gravity(&mut self, entities: &Vec<Entity>, dt: f32, ignore: usize) {
-        const G: f32 = 6.67430 * 10e-6; // In this universe gravity is 11 times stronger
-
         for (i, e) in entities.iter().enumerate() {
             if i == ignore {
                 continue;
@@ -66,97 +103,51 @@ impl Entity {
     }
 }
 
-pub fn create_missile(ctx: &mut Context, x: f32, y: f32, angle: f32) -> Entity {
-    let mesh = graphics::Mesh::new_rectangle(
-        ctx,
-        graphics::DrawMode::fill(),
-        graphics::Rect::new(0.0, 0.0, MISSILE_WIDTH, MISSILE_HEIGHT),
-        Color::RED,
-    )
-    .expect("Could not create mesh");
+pub fn create_missile(x: f32, y: f32, v: f32, angle: f32) -> Entity {
+    let vx = v * angle.cos();
+    let vy = v * angle.sin();
 
     Entity {
         e_type: EntityType::Missile,
         pos: Vec2::new(x, y),
-        vel: Vec2::new(0.0, 0.0),
+        vel: Vec2::new(vx, vy),
         theta: angle,
-        v_theta: 0.0,
         mass: MISSILE_MASS,
-        mesh,
+        radius: 0.0,
     }
 }
 
-pub fn create_planet(ctx: &mut Context, x: f32, y: f32, radius: f32) -> Entity {
-    let mesh = graphics::Mesh::new_circle(
-        ctx,
-        graphics::DrawMode::fill(),
-        Vec2::new(0.0, 0.0),
-        radius,
-        2.0,
-        Color::MAGENTA,
-    )
-    .expect("Could not create mesh");
-
+pub fn create_planet(x: f32, y: f32, radius: f32) -> Entity {
     Entity {
         e_type: EntityType::Planet,
         pos: Vec2::new(x, y),
         vel: Vec2::new(0.0, 0.0),
         theta: 0.0,
-        v_theta: 0.0,
         mass: PLANET_DENSITY * radius * radius * std::f32::consts::PI,
-        mesh,
+        radius,
     }
 }
 
-pub fn create_asteroid(
-    ctx: &mut Context,
-    x: f32,
-    y: f32,
-    vx: f32,
-    vy: f32,
-    radious: f32,
-) -> Entity {
-    let mesh = graphics::Mesh::new_circle(
-        ctx,
-        graphics::DrawMode::fill(),
-        Vec2::new(0.0, 0.0),
-        radious,
-        2.0,
-        Color::BLACK,
-    )
-    .expect("Could not create mesh");
-
+pub fn create_asteroid(x: f32, y: f32, vx: f32, vy: f32, radius: f32) -> Entity {
     Entity {
         e_type: EntityType::Asteroid,
         pos: Vec2::new(x, y),
         vel: Vec2::new(vx, vy),
         theta: 0.0,
-        v_theta: 0.0,
-        mass: ASTEROID_DENSITY * radious * radious * std::f32::consts::PI,
-        mesh,
+        mass: ASTEROID_DENSITY * radius * radius * std::f32::consts::PI,
+        radius,
     }
 }
 
-pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32) -> Entity {
+pub fn create_ufo(x: f32, y: f32, vx: f32, vy: f32) -> Entity {
     let angle = (vy / vx).atan();
-
-    let mesh = graphics::Mesh::new_circle(
-        ctx,
-        graphics::DrawMode::fill(),
-        Vec2::new(0.0, 0.0),
-        UFO_RADIUS,
-        2.0,
-        Color::GREEN,
-    )
-    .expect("Could not create mesh");
 
     Entity {
         e_type: EntityType::Ufo,
         pos: Vec2::new(x, y),
         vel: Vec2::new(vx, vy),
         theta: angle,
-        v_theta: 0.0,
         mass: 100.0,
-        mesh,
+        radius: UFO_RADIUS,
     }
 }

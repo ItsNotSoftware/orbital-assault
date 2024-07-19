@@ -7,8 +7,10 @@ ufo:
   speed: [0, 0]
 
 planets:
-  - position: [350, 270]
-    radius: 90
+  - position: [690, 390]
+    radius: 110
 
+  - position: [1540, 690]
+    radius: 130
 
 asteroids:
