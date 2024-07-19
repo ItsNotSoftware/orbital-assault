@@ -1,8 +1,7 @@
-mod engine;
 mod entity;
 mod load_level;
 
-use entity::Entity;
+use entity::{Entity, EntityType};
 use ggez::event;
 use ggez::glam::Vec2;
 use ggez::graphics::DrawParam;
@@ -29,20 +28,33 @@ impl MainState {
     }
 
     fn reload_level(&mut self) {
+        self.running = false;
         self.entities = load_level_entities();
     }
 }
 
 impl event::EventHandler<ggez::GameError> for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        const MISSILE_IDX: usize = 0;
-
         while ctx.time.check_update_time(FPS) && self.running {
+            // Take missile out of the vec to not compare with itself
+            let mut missile = self.entities.pop().unwrap();
+
             // Update missile state
-            let mut missile = self.entities[MISSILE_IDX].clone(); // Borrow checker workaround ¯\_(ツ)_/¯
-            missile.apply_gravity(&self.entities, DT, MISSILE_IDX);
+            missile.apply_gravity(&self.entities, DT);
             missile.update_pos(DT);
-            self.entities[MISSILE_IDX] = missile;
+
+            for e in &self.entities {
+                if missile.is_coliding(&e) {
+                    // Check if the colision was with an UFO
+                    if e.get_entity_type() == EntityType::Ufo {
+                    } else {
+                        self.reload_level();
+                        return Ok(());
+                    }
+                }
+            }
+
+            self.entities.push(missile); // Put missile back on the Vec
         }
 
         Ok(())
@@ -74,7 +86,6 @@ impl event::EventHandler<ggez::GameError> for MainState {
     ) -> GameResult {
         match input.keycode {
             Some(KeyCode::R) => {
-                self.running = false;
                 self.reload_level();
             }
 
@@ -82,7 +93,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
                 self.running = true;
 
                 // Apply force to missile
-                let missile = &mut self.entities[0];
+                let missile = self.entities.last_mut().unwrap();
                 let (_, angle) = missile.get_pose();
 
                 let force = Vec2::new(MISSILE_THRUST * angle.cos(), MISSILE_THRUST * angle.sin());

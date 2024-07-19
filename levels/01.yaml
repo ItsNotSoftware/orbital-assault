@@ -8,9 +8,9 @@ ufo:
 
 planets:
   - position: [690, 390]
-    radius: 110
+    radius: 100
 
   - position: [1540, 690]
-    radius: 130
+    radius: 140
 
 asteroids:

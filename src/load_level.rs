@@ -1,5 +1,4 @@
 use crate::entity::*;
-use crate::Context;
 use orbital_assault::INITIAL_SPEED;
 use serde::Deserialize;
 use std::fs::File;
@@ -53,14 +52,6 @@ pub fn load_level_entities() -> Vec<Entity> {
         .read_to_string(&mut contents);
     let level_data: SpaceData = serde_yaml::from_str(&contents).unwrap();
 
-    // Missile
-    entities.push(create_missile(
-        level_data.missile.position[0],
-        level_data.missile.position[1],
-        INITIAL_SPEED,
-        level_data.missile.angle,
-    ));
-
     // UFO
     entities.push(create_ufo(
         level_data.ufo.position[0],
@@ -85,6 +76,14 @@ pub fn load_level_entities() -> Vec<Entity> {
         .planets
         .iter()
         .for_each(|p| entities.push(create_planet(p.position[0], p.position[1], p.radius)));
+
+    // Missile (allways the last element)
+    entities.push(create_missile(
+        level_data.missile.position[0],
+        level_data.missile.position[1],
+        INITIAL_SPEED,
+        level_data.missile.angle,
+    ));
 
     entities
 }
