@@ -105,6 +105,13 @@ impl Entity {
         }
     }
 
+    pub fn is_out_of_bounds(&self) -> bool {
+        self.pos.x > WINDOW_WIDTH
+            || self.pos.x < 0.0
+            || self.pos.y > WINDOW_HEIGHT
+            || self.pos.y < 0.0
+    }
+
     pub fn is_coliding(&self, entity: &Entity) -> bool {
         const HW: f32 = MISSILE_WIDTH / 2.0;
         const HH: f32 = MISSILE_HEIGHT / 2.0;

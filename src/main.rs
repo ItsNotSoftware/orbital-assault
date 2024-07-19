@@ -43,6 +43,13 @@ impl event::EventHandler<ggez::GameError> for MainState {
             missile.apply_gravity(&self.entities, DT);
             missile.update_pos(DT);
 
+            // Check out of bounds
+            if missile.is_out_of_bounds() {
+                self.reload_level();
+                return Ok(());
+            }
+
+            // Colision checking
             for e in &self.entities {
                 if missile.is_coliding(&e) {
                     // Check if the colision was with an UFO
