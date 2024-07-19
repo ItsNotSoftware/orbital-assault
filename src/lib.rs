@@ -21,5 +21,5 @@ pub const PLANET_DENSITY: f32 = 10000.0;
 // Game settings
 pub const WINDOW_WIDTH: f32 = 890.0;
 pub const WINDOW_HEIGHT: f32 = 580.0;
-pub const FPS: u32 = 60;
+pub const FPS: u32 = 2;
 pub const DT: f32 = 1.0 / (FPS as f32);
