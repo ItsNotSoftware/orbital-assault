@@ -3,7 +3,7 @@ missile:
   angle: 0
 
 ufo:
-  position: [500, 450]
+  position: [1600, 1030]
   speed: [0, 0]
 
 planets:
@@ -14,3 +14,6 @@ planets:
     radius: 140
 
 asteroids:
+  - position: [100, 690]
+    velocity: [0, 0]
+    radius: 40

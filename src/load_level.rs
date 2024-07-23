@@ -1,10 +1,8 @@
 use crate::entity::*;
-use orbital_assault::INITIAL_SPEED;
+use orbital_assault::*;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
-
-static mut CURRENT_LEVEL: u8 = 1;
 
 #[derive(Debug, Deserialize)]
 struct Missile {
@@ -27,7 +25,7 @@ struct Planet {
 #[derive(Debug, Deserialize)]
 struct Asteroid {
     position: [f32; 2],
-    speed: [f32; 2],
+    velocity: [f32; 2],
     radius: f32,
 }
 
@@ -39,12 +37,12 @@ struct SpaceData {
     asteroids: Vec<Asteroid>,
 }
 
-pub fn load_level_entities() -> Vec<Entity> {
+pub fn load_level_entities(ctx: &mut Context, level: u8) -> Vec<Entity> {
     let mut entities = Vec::new();
     let mut contents = String::new();
 
     // Update the current level
-    let level_file = format!("levels/{:02}.yaml", unsafe { CURRENT_LEVEL });
+    let level_file = format!("levels/{:02}.yaml", level);
 
     // Update the contents with file data
     let _ = File::open(&level_file)
@@ -54,6 +52,7 @@ pub fn load_level_entities() -> Vec<Entity> {
 
     // UFO
     entities.push(create_ufo(
+        ctx,
         level_data.ufo.position[0],
         level_data.ufo.position[1],
         level_data.ufo.speed[0],
@@ -63,10 +62,11 @@ pub fn load_level_entities() -> Vec<Entity> {
     // Asteroids
     level_data.asteroids.iter().for_each(|a| {
         entities.push(create_asteroid(
+            ctx,
             a.position[0],
             a.position[1],
-            a.speed[0],
-            a.speed[1],
+            a.velocity[0],
+            a.velocity[1],
             a.radius,
         ))
     });
@@ -75,10 +75,11 @@ pub fn load_level_entities() -> Vec<Entity> {
     level_data
         .planets
         .iter()
-        .for_each(|p| entities.push(create_planet(p.position[0], p.position[1], p.radius)));
+        .for_each(|p| entities.push(create_planet(ctx, p.position[0], p.position[1], p.radius)));
 
     // Missile (allways the last element)
     entities.push(create_missile(
+        ctx,
         level_data.missile.position[0],
         level_data.missile.position[1],
         INITIAL_SPEED,

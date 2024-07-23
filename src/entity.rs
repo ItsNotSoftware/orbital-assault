@@ -1,4 +1,6 @@
+use graphics::{Canvas, Rect};
 use orbital_assault::*;
+use rand::Rng;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntityType {
@@ -16,6 +18,7 @@ pub struct Entity {
     vel: Vec2,  // Bodyframe velocity
     theta: f32, // Angle in respect to the x-axis
     mass: f32,
+    image: Image,
 }
 impl Entity {
     pub fn get_entity_type(&self) -> EntityType {
@@ -34,45 +37,47 @@ impl Entity {
         self.mass
     }
 
-    pub fn get_mesh(&self, ctx: &mut Context) -> Mesh {
+    pub fn draw(&self, ctx: &mut Context, canvas: &mut Canvas) {
+        let draw_params = DrawParam::default().dest(self.pos).rotation(self.theta);
+
         match self.e_type {
-            EntityType::Missile => graphics::Mesh::new_rectangle(
-                ctx,
-                graphics::DrawMode::fill(),
-                graphics::Rect::new(0.0, 0.0, MISSILE_WIDTH, MISSILE_HEIGHT),
-                Color::RED,
-            )
-            .expect("Could not create mesh"),
+            EntityType::Missile => {
+                canvas.draw(
+                    &self.image,
+                    DrawParam::default()
+                        .dest(self.pos)
+                        .offset(MISSILE_IMG_OFFSET)
+                        .rotation(self.theta + std::f32::consts::PI / 2.0)
+                        .scale(MISSILE_IMG_SCALE),
+                );
+            }
 
-            EntityType::Planet => graphics::Mesh::new_circle(
-                ctx,
-                graphics::DrawMode::fill(),
-                Vec2::new(0.0, 0.0),
-                self.radius,
-                2.0,
-                Color::MAGENTA,
-            )
-            .expect("Could not create mesh"),
+            EntityType::Planet => {
+                canvas.draw(
+                    &self.image,
+                    DrawParam::default()
+                        .dest(self.pos)
+                        .offset(PLANET_IMG_OFFSET)
+                        .scale(PLANET_IMG_SCALE * self.radius),
+                );
+            }
+            EntityType::Ufo => {
+                canvas.draw(
+                    &self.image,
+                    DrawParam::default()
+                        .dest(self.pos)
+                        .offset(UFO_IMG_OFFSET)
+                        .scale(UFO_IMG_SCALE * self.radius),
+                );
+            }
 
-            EntityType::Asteroid => graphics::Mesh::new_circle(
-                ctx,
-                graphics::DrawMode::fill(),
-                Vec2::new(0.0, 0.0),
-                self.radius,
-                2.0,
-                Color::BLACK,
-            )
-            .expect("Could not create mesh"),
-
-            EntityType::Ufo => graphics::Mesh::new_circle(
-                ctx,
-                graphics::DrawMode::fill(),
-                Vec2::new(0.0, 0.0),
-                UFO_RADIUS,
-                2.0,
-                Color::GREEN,
-            )
-            .expect("Could not create mesh"),
+            EntityType::Asteroid => canvas.draw(
+                &self.image,
+                DrawParam::default()
+                    .dest(self.pos)
+                    .offset(ASTEROID_IMG_OFFSET)
+                    .scale(ASTEROID_IMG_SCALE * self.radius),
+            ),
         }
     }
 
@@ -144,7 +149,7 @@ impl Entity {
     }
 }
 
-pub fn create_missile(x: f32, y: f32, v: f32, angle: f32) -> Entity {
+pub fn create_missile(ctx: &mut Context, x: f32, y: f32, v: f32, angle: f32) -> Entity {
     let angle = angle.to_radians();
 
     Entity {
@@ -154,10 +159,13 @@ pub fn create_missile(x: f32, y: f32, v: f32, angle: f32) -> Entity {
         theta: angle,
         mass: MISSILE_MASS,
         radius: 0.0,
+        image: Image::from_path(ctx, "/missile.png").expect("Could not load missile image"),
     }
 }
 
-pub fn create_planet(x: f32, y: f32, radius: f32) -> Entity {
+pub fn create_planet(ctx: &mut Context, x: f32, y: f32, radius: f32) -> Entity {
+    let random_number: u32 = rand::thread_rng().gen_range(1..5);
+
     Entity {
         e_type: EntityType::Planet,
         pos: Vec2::new(x, y),
@@ -165,10 +173,12 @@ pub fn create_planet(x: f32, y: f32, radius: f32) -> Entity {
         theta: 0.0,
         mass: PLANET_DENSITY * radius * radius * std::f32::consts::PI,
         radius,
+        image: Image::from_path(ctx, format!("/p{}.png", random_number))
+            .expect("Could not load planet image"),
     }
 }
 
-pub fn create_asteroid(x: f32, y: f32, vx: f32, vy: f32, radius: f32) -> Entity {
+pub fn create_asteroid(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32, radius: f32) -> Entity {
     Entity {
         e_type: EntityType::Asteroid,
         pos: Vec2::new(x, y),
@@ -176,10 +186,11 @@ pub fn create_asteroid(x: f32, y: f32, vx: f32, vy: f32, radius: f32) -> Entity 
         theta: 0.0,
         mass: ASTEROID_DENSITY * radius * radius * std::f32::consts::PI,
         radius,
+        image: Image::from_path(ctx, "/asteroid.png").expect("Could not load asteroid image"),
     }
 }
 
-pub fn create_ufo(x: f32, y: f32, vx: f32, vy: f32) -> Entity {
+pub fn create_ufo(ctx: &mut Context, x: f32, y: f32, vx: f32, vy: f32) -> Entity {
     let angle = (vy / vx).atan();
 
     Entity {
@@ -189,5 +200,6 @@ pub fn create_ufo(x: f32, y: f32, vx: f32, vy: f32) -> Entity {
         theta: angle,
         mass: 100.0,
         radius: UFO_RADIUS,
+        image: Image::from_path(ctx, "/ufo.png").expect("Could not load ufo image"),
     }
 }

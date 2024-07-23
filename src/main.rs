@@ -11,15 +11,17 @@ use load_level::load_level_entities;
 use orbital_assault::*;
 
 struct MainState {
+    level: u8,
     running: bool,
     entities: Vec<Entity>,
 }
 
 impl MainState {
-    fn new(_ctx: &mut Context) -> GameResult<MainState> {
-        let entities = load_level_entities();
+    fn new(ctx: &mut Context) -> GameResult<MainState> {
+        let entities = load_level_entities(ctx, 1);
 
         let s = MainState {
+            level: 1,
             running: false,
             entities,
         };
@@ -27,9 +29,15 @@ impl MainState {
         Ok(s)
     }
 
-    fn reload_level(&mut self) {
+    fn reload_level(&mut self, ctx: &mut Context) {
         self.running = false;
-        self.entities = load_level_entities();
+        self.entities = load_level_entities(ctx, self.level);
+    }
+
+    fn next_level(&mut self, ctx: &mut Context) {
+        self.level += 1;
+        self.running = false;
+        self.entities = load_level_entities(ctx, self.level);
     }
 }
 
@@ -45,7 +53,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
             // Check out of bounds
             if missile.is_out_of_bounds() {
-                self.reload_level();
+                self.reload_level(ctx);
                 return Ok(());
             }
 
@@ -54,8 +62,10 @@ impl event::EventHandler<ggez::GameError> for MainState {
                 if missile.is_coliding(&e) {
                     // Check if the colision was with an UFO
                     if e.get_entity_type() == EntityType::Ufo {
+                        self.next_level(ctx);
+                        return Ok(());
                     } else {
-                        self.reload_level();
+                        self.reload_level(ctx);
                         return Ok(());
                     }
                 }
@@ -73,12 +83,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         // Draw all entities
         self.entities.iter().for_each(|e| {
-            // Set position and rotation
-            let (pos, theta) = e.get_pose();
-            let draw_params = DrawParam::default().dest(pos).rotation(theta);
-
-            let mesh = e.get_mesh(ctx);
-            canvas.draw(&mesh, draw_params);
+            e.draw(ctx, &mut canvas);
         });
 
         canvas.finish(ctx)?;
@@ -93,7 +98,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
     ) -> GameResult {
         match input.keycode {
             Some(KeyCode::R) => {
-                self.reload_level();
+                self.reload_level(ctx);
             }
 
             Some(KeyCode::Space) => {
@@ -119,7 +124,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
 pub fn main() -> GameResult {
     let cb = ContextBuilder::new("orbital-assault", "ItsNotSoftware")
         .window_setup(conf::WindowSetup::default().title("Orbital Assault!"))
-        .window_mode(conf::WindowMode::default().dimensions(WINDOW_WIDTH, WINDOW_HEIGHT));
+        .window_mode(conf::WindowMode::default().dimensions(WINDOW_WIDTH, WINDOW_HEIGHT))
+        .add_resource_path("./assets");
 
     let (mut ctx, events_loop) = cb.build()?;
     let game = MainState::new(&mut ctx)?;
